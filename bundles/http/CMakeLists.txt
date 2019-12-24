@@ -1,4 +1,4 @@
 
 file(GLOB  SOURCES *.cpp)
 
-add_library(auth ${SOURCES})
+add_library(http ${SOURCES})

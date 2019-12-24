@@ -1,7 +1,12 @@
 #pragma once
+#include "micro/ServiceBundle.h"
 
 struct HttpBundleConfig
-{};
+{
+  int port;
+};
+
+class HttpRouter;
 
 struct HttpBundle
 {

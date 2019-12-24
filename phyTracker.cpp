@@ -4,6 +4,7 @@
 #include "phyTracker.h"
 #include <pistache/endpoint.h>
 #include <pistache/router.h>
+#include "jwt/jwt.hpp"
 
 using namespace Pistache;
 using namespace Rest;

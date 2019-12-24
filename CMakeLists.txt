@@ -4,8 +4,15 @@
 cmake_minimum_required (VERSION 3.8)
 set(CMAKE_CXX_STANDARD 14)
 
+include_directories("3d-party/cpp-jwt/include", ".")
+find_package(OpenSSL REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+
 add_subdirectory(micro)
 add_subdirectory(bundles)
+
+
 
 # Add source to this project's executable.
 add_executable (phyTracker "phyTracker.cpp" "phyTracker.h")
