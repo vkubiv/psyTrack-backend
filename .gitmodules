@@ -4,3 +4,9 @@
 [submodule "3d-party/cpp-jwt"]
 	path = 3d-party/cpp-jwt
 	url = https://github.com/arun11299/cpp-jwt.git
+
+[submodule "cpp-jwt"]
+	path = cpp-jwt
+	url = https://github.com/arun11299/cpp-jwt.git
+
+

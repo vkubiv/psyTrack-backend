@@ -1,5 +1,6 @@
 #pragma once
 #include "micro/ServiceBundle.h"
+#include "HttpRouter.h"
 
 struct HttpBundleConfig
 {
@@ -10,8 +11,8 @@ class HttpRouter;
 
 struct HttpBundle
 {
-  static constexpr auto BundleId = "com.org.xxx.DatabaseBundle";
+  static constexpr auto BundleId = "org.kubiv.phyTrack.HttpBundle";
 
-  using Exports = sb::TypeList<Database>;
+  using Exports = sb::TypeList<HttpRouter>;
   using Externals = sb::TypeList<HttpBundleConfig>;
 };

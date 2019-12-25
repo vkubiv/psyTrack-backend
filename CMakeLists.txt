@@ -4,7 +4,7 @@
 cmake_minimum_required (VERSION 3.8)
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories("3d-party/cpp-jwt/include", ".")
+include_directories("3d-party/cpp-jwt/include" ".")
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 

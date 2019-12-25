@@ -30,4 +30,4 @@ RUN echo "dev:dev" | chpasswd
 EXPOSE 22
 EXPOSE 3000
 
-CMD service ssh start
+ENTRYPOINT service ssh restart && bash
