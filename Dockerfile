@@ -10,9 +10,15 @@ RUN mkdir -p /var/run/sshd
  
 RUN echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config && \
    ssh-keygen -A
+
+RUN unminimize
    
 RUN git clone https://github.com/oktal/pistache.git && cd pistache && git submodule update --init && \
 	mkdir build && cd build && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug .. && make && make install		
+
+RUN git clone https://github.com/whoshuu/cpr.git && cd cpr && git submodule update --init && \
+	mkdir build && cd build && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug .. && make && make install		
+
 
 # RUN git clone https://github.com/google/googletest.git && cd googletest && \
 #	mkdir build && cd build && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug .. && make && make install

@@ -1,9 +1,12 @@
 #pragma once
 #include "micro/ServiceBundle.h"
+#include "SystemBundleConfig.h"
 
-struct AuthBundle
+class HttpServer;
+
+struct SystemBundle
 {
-  static constexpr auto BundleId = "org.kubiv.phyTrack.AuthBundle";
+  static constexpr auto BundleId = "org.kubiv.phyTrack.HttpBundle";
 
   using Exports = sb::TypeList<HttpServer>;
   using Externals = sb::TypeList<SystemBundleConfig>;
