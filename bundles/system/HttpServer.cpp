@@ -3,7 +3,7 @@
 
 using namespace Pistache;
 
-void HttpServer::run()
+void HttpServer::serve()
 {
   Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(config_.port));
   auto opts = Pistache::Http::Endpoint::options().threads(config_.threadCount);
