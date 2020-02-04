@@ -1,9 +1,10 @@
 #pragma once
 
-
+namespace auth {
 struct AuthBundleConfig
 {
-  std::string jwtPubKey;
+  std::string jwtPubKeyPath;
   std::string jwtIssuer;
   std::string jwtAudience;
 };
+}

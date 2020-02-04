@@ -7,3 +7,6 @@
 
 
 
+[submodule "3d-party/rapidjson"]
+	path = 3d-party/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
