@@ -1,7 +1,9 @@
 #include "AuthBundle.h"
 #include "AuthBundleConfig.h"
-#include "AuthService.h"
 #include "AuthMiddleware.h"
+#include "AuthService.h"
+#include "FirebaseCertService.h"
+#include "system/SystemBundle.h"
 #include "micro/BundleActivator.h"
 
 namespace auth {
@@ -9,17 +11,21 @@ using namespace sb;
 
 struct AuthBundleActivator : public BundleActivator<AuthBundle>
 {
-  using References = TypeList<>;
-  using Providers = TypeList<Provider<AuthService>, Provider<AuthMiddleware>>;
+  using References = TypeList<SystemBundle>;
+  using Providers = TypeList<Provider<AuthService>,
+                             Provider<AuthMiddleware>,
+                             Provider<FirebaseCertService>>;
 
   AsyncActivateResult activate(ThisBundle<AuthBundleActivator> thisBundle)
   {
-    return thisBundle.getService<AuthService>().init(
-      thisBundle.getExternal<AuthBundleConfig>());
+    auto authConfig = thisBundle.getExternal<AuthBundleConfig>();
+    thisBundle.getService<FirebaseCertService>().init(authConfig.jwtPubKeyPath);
+
+    thisBundle.getService<AuthService>().init(authConfig);
+    return make_ready_future();
   }
 };
 
-namespace {
-bool reg = ExportBundleActivator<AuthBundleActivator>();
-}
+bool AuthBundle::IsRegistred = ExportBundleActivator<AuthBundleActivator>();
+
 }

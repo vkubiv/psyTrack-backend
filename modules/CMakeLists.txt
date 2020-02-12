@@ -1,7 +1,6 @@
-﻿
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+﻿# GLOB_RECURSE also simplifies your glob expressions
+file (GLOB_RECURSE SOURCES *.cpp)
 
-FOREACH(SUBDIRS ${SUBDIRS})
-  add_subdirectory(${SUBDIRS})
-ENDFOREACH()
-
+add_library(modules ${SOURCES})
+target_include_directories(modules PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(modules rapidjson)

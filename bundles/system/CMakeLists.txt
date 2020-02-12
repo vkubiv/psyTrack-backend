@@ -1,4 +1,5 @@
 
 file(GLOB  SOURCES *.cpp)
 
-add_library(http ${SOURCES})
+add_library(system-bundle ${SOURCES})
+target_link_libraries(system-bundle pistache)

@@ -1,10 +1,17 @@
 
+#include "http/Http.h"
+#include "rapidjson/document.h"
+
 class ResponseRender
 {
 public:
-  ResponseRender(char* error_code, char* error_message);
+  ResponseRender(const char* error_code = nullptr,
+                 const char* error_message = nullptr);
+
+  void render(const HttpResponseWriter& writer,
+              const rapidjson::Value& json = rapidjson::Value());
 
 private:
-  char* error_code_;
-  char* error_message_;
+  const char* error_code_;
+  const char* error_message_;
 };

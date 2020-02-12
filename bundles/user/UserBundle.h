@@ -11,7 +11,9 @@ struct UserBundle
 {
   static constexpr auto BundleId = "org.kubiv.phyTrack.UserBundle";
 
-  using Exports = sb::TypeList<UserService>;
+  using Exports = sb::TypeList<>;
   using Externals = sb::TypeList<>;
+
+  static bool IsRegistred;
 };
 }

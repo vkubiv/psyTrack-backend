@@ -13,5 +13,7 @@ struct AuthBundle
 
   using Exports = sb::TypeList<AuthService, AuthMiddleware>;
   using Externals = sb::TypeList<AuthBundleConfig>;
+  
+  static bool IsRegistred;
 };
 }

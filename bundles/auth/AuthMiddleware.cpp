@@ -1,5 +1,6 @@
 #include "AuthMiddleware.h"
 #include "AuthService.h"
+#include "response-render/ResponseRender.h"
 
 using namespace Pistache;
 
@@ -9,13 +10,34 @@ auth::AuthMiddleware::handle(Context& context,
                              HttpResponseWriter response,
                              NextMiddleware next)
 {
-  auto headers = request.headers();
-  auto authorization = headers.get<Http::Header::Authorization>();
-  auto bearerPrefix = "Bearer ";
-  if (authorization->value().find(bearerPrefix) != 0) {
-    auto token = authorization->value().substr(strlen(bearerPrefix));
+  try {
+    auto headers = request.headers();
+    auto authHeader = headers.tryGet<Http::Header::Authorization>();
+    if (!authHeader) {
+      ResponseRender(to_string(auth::AuthErrorCode::NotAuthorized))
+        .render(response);
+      return;
+    }
 
-    auto ec = authService_->decodeJwt(token, &context.userId);
+    authService_->decodeAuthHeader(authHeader->value())
+      .then(
+        [&, next, response](const AuthResult<std::string>& result) mutable {
+          if (result.errorCode == AuthErrorCode::Ok) {
+            context.userId = result.value;
+            next(request, response);
+            return;
+          }
 
+          ResponseRender(to_string(result.errorCode)).render(response);
+        },
+        [response](std::exception_ptr exPtr) {
+          try {
+            std::rethrow_exception(exPtr);            
+          } catch (std::exception& e) {
+            ResponseRender("exception", e.what()).render(response);
+          }
+        });
+  } catch (std::exception& e) {
+    ResponseRender("exception", e.what()).render(response);
   }
 }

@@ -4,7 +4,8 @@ FROM ubuntu
 LABEL description="Container for use with Visual Studio"
  
 # install build dependencies
-RUN apt-get update && apt-get install -y g++ rsync zip openssh-server make gdb cmake git libssl-dev
+RUN apt-get update && apt-get install -y g++ rsync zip openssh-server make gdb cmake git libssl-dev nginx
+
 # configure SSH for communication with Visual Studio
 RUN mkdir -p /var/run/sshd
  
@@ -34,4 +35,7 @@ RUN echo "dev:dev" | chpasswd
 EXPOSE 22
 EXPOSE 3000
 
-ENTRYPOINT service ssh restart && bash
+COPY default.conf /etc/nginx/conf.d/default.conf
+RUN echo "set auto-load safe-path /" >> /root/.gdbinit
+
+ENTRYPOINT service ssh restart && nginx && bash

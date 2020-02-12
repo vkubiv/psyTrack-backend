@@ -1,35 +1,59 @@
 ﻿// phyTracker.cpp : Defines the entry point for the application.
 //
-
 #include "phyTracker.h"
-#include "jwt/jwt.hpp"
-#include <cpr/cpr.h>
-#include <pistache/endpoint.h>
-#include <pistache/router.h>
+#include "auth/AuthBundle.h"
+#include "auth/AuthBundleConfig.h"
+#include "micro/Application.h"
+#include "system/HttpServer.h"
+#include "system/SystemBundle.h"
+#include "user/UserBundle.h"
+#include <iostream>
 
-using namespace Pistache;
-using namespace Rest;
+class PhyTrack : public sb::Application<PhyTrack>
+{
+public:
+  using Bundles =
+    sb::TypeList<SystemBundle, auth::AuthBundle, user::UserBundle>;
+
+  sb::AsyncActivateResult activate(sb::BundlesLoader& loader)
+  {
+    auth::AuthBundleConfig authConfig = {
+      "http://localhost/pubkeys",
+      "https://securetoken.google.com/mindinspector-app",
+      "mindinspector-app"
+    };
+
+    systemBundle_ =
+      loader
+        .activate<SystemBundle>(SystemBundleConfig({ { 3000, 1 }, { 8, 1 } }))
+        .get();
+    loader.activate<auth::AuthBundle>(authConfig).get();
+    loader.activate<user::UserBundle>().get();
+
+    return sb::make_ready_future();
+  }
+
+  void run() { systemBundle_.getService<HttpServer>()->serve(); }
+
+private:
+  sb::BundleRef<SystemBundle> systemBundle_;
+};
 
 int
-main()
+main(int argc, const char** argv)
 {
-  Router router;
+  std::cout << "Path: " << argv[0];
 
-  Routes::Get(router,
-              "/users/:id",
-              [](const Rest::Request& request, Http::ResponseWriter response) {
-                auto id = request.param(":id").as<int>();
+  try {
 
-                response.send(Pistache::Http::Code::Ok,
-                              "Hello World " + std::to_string(id) + "\n");
-                return Route::Result::Ok;
-              });
+    PhyTrack app;
 
-  Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(3000));
-  auto opts = Pistache::Http::Endpoint::options().threads(1);
+    auto result = app.setupBundles();
 
-  Http::Endpoint server(addr);
-  server.init(opts);
-  server.setHandler(router.handler());
-  server.serve();
+    result.get();
+
+    app.run();
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
 }

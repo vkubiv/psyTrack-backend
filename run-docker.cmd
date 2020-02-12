@@ -1,1 +1,1 @@
-docker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -p 5000:22 -p 3000:3000 -i -t ubuntu-vs /bin/bash
+docker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -p 5000:22 -p 3000:3000 -i -t --privileged ubuntu-vs

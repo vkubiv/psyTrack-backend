@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bundles/system/Http.h"
+#include "http/Http.h"
 #include "bundles/auth/AuthMiddleware.h"
 
 namespace user {

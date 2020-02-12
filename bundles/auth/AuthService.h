@@ -1,24 +1,33 @@
 #pragma once
-#include <future>
-#include <string>
-#include <vector>
 #include "AuthErrors.h"
+#include "micro/ServiceRef.h"
+#include "AuthAsyncResult.h"
+#include <future>
+#include <map>
+#include <string>
 
 namespace auth {
 
 class AuthBundleConfig;
+class FirebaseCertService;
 
 class AuthService
 {
 public:
-  
-  std::future<void> init(const AuthBundleConfig& config);
-  AuthErrorCode decodeJwt(const std::string& jwt, std::string* out_uid);
+  AuthService(sb::ServiceRef<FirebaseCertService> firebaseCertService)
+    : firebaseCertService_(firebaseCertService)
+  {}
+
+  void init(const AuthBundleConfig& config);
+  AuthAsyncResult<std::string> decodeAuthHeader(
+    const std::string& authHeader);
 
 private:
-  std::vector<std::string> pubCerts_;
+  std::map<std::string, std::string> pubCerts_;
   std::string jwtIssuer_;
   std::string jwtAudience_;
+
+  sb::ServiceRef<FirebaseCertService> firebaseCertService_;
 };
 
 }

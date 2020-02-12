@@ -1,60 +1,68 @@
 #include "AuthService.h"
 #include "AuthBundleConfig.h"
+#include "FirebaseCertService.h"
 #include "jwt/json/json.hpp"
 #include "jwt/jwt.hpp"
 #include <fstream>
+#include <iostream>
 namespace auth {
 
-std::future<void>
+void
 AuthService::init(const AuthBundleConfig& config)
 {
   using json = nlohmann::json;
 
-  // config.jwtPubKeyPath
-  return std::async([this, &config]() {
-    std::fstream fin(config.jwtPubKeyPath);
-    std::stringstream buffer;
-    buffer << fin.rdbuf();
-
-    auto certs = json::parse(buffer.str());
-
-    for (auto cert : certs.items()) {
-      pubCerts_.push_back(cert.value());
-    }
-  });
+  jwtIssuer_ = config.jwtIssuer;
+  jwtAudience_ = config.jwtAudience;
 }
 
-AuthErrorCode
-AuthService::decodeJwt(const std::string& jwt, std::string* outUserId)
+AuthAsyncResult<std::string>
+AuthService::decodeAuthHeader(const std::string& authHeader)
 {
-  using namespace jwt::params;
+  auto bearerPrefix = "Bearer ";
+  if (authHeader.find(bearerPrefix) != 0) {
 
-  for (const auto& cert : pubCerts_) {
-
-    std::error_code ec;
-
-    auto decObj = jwt::decode(jwt,
-                              algorithms({ "rs256" }),
-                              ec,
-                              issuer(jwtIssuer_),
-                              aud(jwtAudience_),
-                              validate_iat(true),
-                              secret(cert));
-
-    if (ec.value() !=
-        static_cast<int>(jwt::VerificationErrc::InvalidSignature)) {
-      if (ec) {
-        if (ec.value() == static_cast<int>(jwt::VerificationErrc::TokenExpired))
-          return AuthErrorCode::JwtTokenExpired;
-        return AuthErrorCode::JwtOther;
-      }
-
-      *outUserId = decObj.payload().get_claim_value<std::string>("user_id");
-
-      return AuthErrorCode::Ok;
-    }
+    return makeAsyncResultError<std::string>(AuthErrorCode::JwtOther);
   }
 
-  return AuthErrorCode::JwtOther;
+  auto jwtToken = authHeader.substr(strlen(bearerPrefix));
+
+  using namespace jwt::params;
+
+  std::string keyId;
+  {
+    std::error_code ec;
+    auto decObj =
+      jwt::decode(jwtToken, algorithms({ "rs256" }), ec, verify(false));
+    keyId = decObj.header().create_json_obj()["kid"];
+  }
+
+  return firebaseCertService_->fetchCert(keyId).then(
+    [this, jwtToken = std::move(jwtToken)](const std::string& key) {
+      std::error_code ec;
+
+      auto decObj = jwt::decode(jwtToken,
+                                algorithms({ "rs256" }),
+                                ec,
+                                issuer(jwtIssuer_),
+                                aud(jwtAudience_),
+                                validate_iat(true),
+                                secret(key));
+
+      if (ec) {
+
+        std::cout << std::endl << key << std::endl;
+        std::cout << jwtToken << std::endl;
+
+        if (ec == jwt::VerificationErrc::TokenExpired)
+          return AuthResult<std::string>(AuthErrorCode::JwtTokenExpired);
+
+        return AuthResult<std::string>(AuthErrorCode::JwtOther);
+      }
+
+      return AuthResult<std::string>(
+        decObj.payload().get_claim_value<std::string>("user_id"));
+    },
+    Async::Throw);
 }
 }
